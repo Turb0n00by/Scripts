@@ -1,0 +1,21 @@
+#!/bin/bash
+#
+#
+# Description: Looks up the default kerberos realm preference for the user and reports it to JAMF as an EA result
+#user=$(/usr/bin/python -c 'from SystemConfiguration import SCDynamicStoreCopyConsoleUser; import sys; username = (SCDynamicStoreCopyConsoleUser(None, None, None) or [None])[0]; username = [username,""][username in [u"loginwindow", None, u""]]; sys.stdout.write(username + "
+#");')
+
+user=$( scutil <<< "show State:/Users/ConsoleUser" | awk '/Name :/ && ! /loginwindow/ { print $3 }' )
+
+realm=$(su $user -c '/usr/libexec/PlistBuddy -c "print :libdefaults:default_realm" ~/Library/Preferences/com.apple.Kerberos.plist')
+resultCode=$?
+
+if [ $resultCode == 0 ]; then
+    echo "<result>${realm}</result>"
+else
+    echo "<result>null</result>"
+fi
+
+# Exiting and returning the policy call code
+
+exit $resultCode
