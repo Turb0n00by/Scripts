@@ -1,0 +1,22 @@
+#!/bin/bash
+
+##Check if device has been enrolled already
+echo "Checking if DEP Notify is present"
+if [ -d "/Applications/Utilities/DEP Notify.app" ]; then
+    echo "Device has been enrolled already" 
+    exit 0
+    
+else 
+    echo "Device will be enrolled"   
+fi
+
+##Check if M1 and install Rosetta if required
+arch=$(/usr/bin/arch)
+if [ "$arch" == "arm64" ]; then
+    echo "Apple Silicon - Installing Rosetta"
+    /usr/sbin/softwareupdate --install-rosetta --agree-to-license
+elif [ "$arch" == "i386" ]; then
+    echo "Intel - Skipping Rosetta"
+else
+    echo "Unknown Architecture"
+fi
