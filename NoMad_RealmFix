@@ -1,0 +1,38 @@
+#!/bin/bash
+#
+# Description: Sets the users default kerberos realm manually, this script pairs well with Jamf EA script "
+#
+# Updated for Monterey Support
+#
+
+# Set the realm
+realm="YOUR REALM HERE"
+
+# Saving the JAMF user varible to something more verbose
+if [ -z $3 ]; then
+    user=$(/usr/bin/python3 -c 'from SystemConfiguration import SCDynamicStoreCopyConsoleUser; import sys; username = (SCDynamicStoreCopyConsoleUser(None, None, None) or [None])[0]; username = [username,""][username in [u"loginwindow", None, u""]]; sys.stdout.write(username + "
+");')
+else
+    user=$3
+fi
+echo "Running for: ${user}"
+
+# if [ -z $user ]; then
+if [ -z $3 ]; then
+   echo "User is not logged on - cannot apply fix - command aborting "
+   exit 1
+fi 
+
+# Saving the preference as the user
+echo "Setting realm: ${realm}"
+su $user -c "defaults write com.apple.kerberos libdefaults -dict default_realm ${realm}"
+resultCode=$?
+
+if [ $resultCode ]; then
+    echo "Success"
+else
+    echo "Failure"
+fi
+
+# Exiting and returning the policy call code
+exit $resultCode
